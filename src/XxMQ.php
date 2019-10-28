@@ -25,14 +25,9 @@ use MQ\Http\HttpClient;
  **/
 class XxMQ extends MQClient
 {
-    private $endPoint = 'http://1042200050238966.mqrest.cn-qingdao-internal.aliyuncs.com';
-    private $accessId = 'LTAIYmBKM9mUP6PP';
-    private $accessKey = '1agdCM5oDUNOt0Ul66KDFgjaRuxNiO';
-    private $client = '';
 
     public function __construct()
     {
-        echo 11111;
         $endPoint = $this->endPoint;
         $accessId = $this->accessId;
         $accessKey = $this->accessKey;

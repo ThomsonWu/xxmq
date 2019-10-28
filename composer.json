@@ -1,17 +1,18 @@
 {
     "name": "xxmq/xxmq",
-    "description": "xiaoxiangxueyuan mq 集成包",
+    "description": "小象学院MQ 集成包",
+    "type": "library",
     "require": {
         "aliyunmq/mq-http-sdk": "^1.0"
     },
     "require-dev": {
         "aliyunmq/mq-http-sdk": "^1.0"
     },
+    "license": "MIT",
     "authors": [
         {
             "name": "wuqisheng",
             "email": "wuqisheng@xiaoxiangxueyuan.com"
         }
-    ],
-    "minimum-stability": "beta"
+    ]
 }
