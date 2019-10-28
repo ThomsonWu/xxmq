@@ -3,7 +3,7 @@
     "description": "小象学院MQ 集成包",
     "type": "library",
     "require": {
-        "aliyunmq/mq-http-sdk": "^1.0"
+        "aliyunmq/mq-http-sdk": "^1.0",
         "php" : ">=5.5.0"
     },
     "require-dev": {
