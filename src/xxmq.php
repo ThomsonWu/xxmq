@@ -48,7 +48,7 @@ class xxmq
             $securityToken = null;
             $config = null;
             try {
-                $this->link= self::init($mqType,$config);
+                $this->link= $this->init($mqType,$config);
                 //parent::__construct($endPoint, $accessId, $accessKey);
                 //$this->client = new HttpClient($endPoint, $accessId,
                     //$accessKey, $securityToken, $config);
