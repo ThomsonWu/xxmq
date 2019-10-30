@@ -7,7 +7,6 @@ namespace xxmq;
  *
  **************************************************************************/
 
-//require_once(__DIR__.'/../autoload.php');
 use MQ\MQClient;
 use MQ\Exception\InvalidArgumentException;
 use MQ\Model\TopicMessage;
