@@ -46,7 +46,6 @@ class xxmq
             $accessId = $this->accessId;
             $accessKey = $this->accessKey;
             $securityToken = null;
-            $config = null;
             try {
                 $this->link= $this->init($mqType,$config);
                 //parent::__construct($endPoint, $accessId, $accessKey);
