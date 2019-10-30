@@ -52,7 +52,7 @@ class xxmq
                 //parent::__construct($endPoint, $accessId, $accessKey);
                 //$this->client = new HttpClient($endPoint, $accessId,
                     //$accessKey, $securityToken, $config);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 if ($e instanceof MQ\Exception\InvalidArgumentException) {
                     printf("Invalid Argument!RequestId:%s\n", $e->getRequestId());
                 }
@@ -62,7 +62,7 @@ class xxmq
     }
     protected function init($mqType,$config){
         if(!is_array($config)){
-            throw new Exception('config lost!');
+            throw new \Exception('config lost!');
         }
         switch($mqType){
         case 'rocketmq':
@@ -92,14 +92,14 @@ class xxmq
     public function publish($topic,$message,$instanceId=null){
         $mqType = $this->mqType;
         if($topic==''||$topic==null||strlen($topic)<=0){
-            throw new Exception('topic can not be empty!');
+            throw new \Exception('topic can not be empty!');
         }
         if($message==''||$message==null||strlen($message)<=0){
-            throw new Exception('do not publish empty message!');
+            throw new \Exception('do not publish empty message!');
         }
         if($mqType=='rocketmq'){
             if($instanceId==null){
-                throw new Exception('RocketMQ need instanceId please administrator to get it!');
+                throw new \Exception('RocketMQ need instanceId please administrator to get it!');
             }
             $message = $this->setMessage($message,$mqType);
             $producer = $this->getProducer();
@@ -142,7 +142,7 @@ class xxmq
             $consumer = $this->getConsumer();
             try{
                 return $consumer->ackMessage($receiptHandles);
-            }catch(Exception $e){
+            }catch(\Exception $e){
                 if ($e instanceof MQ\Exception\AckMessageException) {
                    // 某些消息的句柄可能超时了会导致确认不成功
                     printf("Ack Error, RequestId:%s\n", $e->getRequestId());
