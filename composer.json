@@ -1,6 +1,8 @@
 {
     "name": "xxmq/xxmq",
     "description": "小象学院MQ 集成包",
+    "keywords": ["mq", "rocketmq","RocketMQ","MQ","php queue","PHP queue","xiaoxiangxueyuan"],
+    "homepage": "https://www.chinahadoop.cn",
     "type": "library",
     "require": {
         "aliyunmq/mq-http-sdk": "^1.0",
@@ -15,5 +17,16 @@
             "name": "wuqisheng",
             "email": "wuqisheng@xiaoxiangxueyuan.com"
         }
-    ]
+    ],
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://packagist.phpcomposer.com"
+        }
+    },
+    "autoload":{
+        "psr-4": {
+            "xxmq\\": "src/"
+        }
+    }
 }
