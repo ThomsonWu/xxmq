@@ -7,7 +7,7 @@ namespace xxmq;
  *
  **************************************************************************/
 
-require_once(__DIR__.'/../autoload.php');
+//require_once(__DIR__.'/../autoload.php');
 use MQ\MQClient;
 use MQ\Exception\InvalidArgumentException;
 use MQ\Model\TopicMessage;
@@ -30,19 +30,26 @@ class xxmq
     protected $topic=null;
     protected $gid=null;
     protected $instanceId=null;
+    protected $endPoint=null;
+    protected $accessId=null;
+    protected $accessKey=null;
     private $mqType='rocketmq';
 
     public function __construct($mqType)
     {
+        $config = $this->getConfig();
         $this->mqType = $mqType;
         if($mqType=='rocketmq'){
+            $this->endPoint = $config['rocketmq']['endPoint'];
+            $this->accessId = $config['rocketmq']['accessId'];
+            $this->accessKey = $config['rocketmq']['accessKey'];
             $endPoint = $this->endPoint;
             $accessId = $this->accessId;
             $accessKey = $this->accessKey;
             $securityToken = null;
             $config = null;
             try {
-                self::$link= self::init($mqType,$config);
+                $this->link= self::init($mqType,$config);
                 //parent::__construct($endPoint, $accessId, $accessKey);
                 //$this->client = new HttpClient($endPoint, $accessId,
                     //$accessKey, $securityToken, $config);
@@ -75,10 +82,10 @@ class xxmq
             }else{
                 $this->gid= '';
             }
-            return self::$link = new MQClient($config['endPoint'], $config['accessId'], $config['accessKey']);
+            return $this->link = new MQClient($config['endPoint'], $config['accessId'], $config['accessKey']);
             break;
         default:
-            return self::$link = new MQClient($config['endPoint'], $config['accessId'], $config['accessKey']);
+            return $this->link = new MQClient($config['endPoint'], $config['accessId'], $config['accessKey']);
             break;
         }
     }
@@ -96,20 +103,20 @@ class xxmq
                 throw new Exception('RocketMQ need instanceId please administrator to get it!');
             }
             $message = $this->setMessage($message,$mqType);
-            $producer = $this->getProducer($instanceId,$topic);
+            $producer = $this->getProducer();
             return $producer->publishMessage($message);
         }
     }
 
     public function getProducer(){
         if($this->mqType=='rocketmq'){
-            return self::$link->getProducer($this->instanceId,$this->topic);
+            return $this->link->getProducer($this->instanceId,$this->topic);
         }
     }
 
     public function getConsumer(){
         if($this->mqType=='rocketmq'){
-            return self::$link->getConsumer($this->instanceId,$this->topic,$this->gid);
+            return $this->link->getConsumer($this->instanceId,$this->topic,$this->gid);
         }
     }
 
@@ -151,7 +158,12 @@ class xxmq
     }
 
     private function getConfig(){
-        require_once(__DIR__.'/config.php');
+        $config =  require_once(__DIR__.'/config.php');
+        return $config;
+    }
+
+    //to be fixed
+    public function listen(){
 
     }
 
