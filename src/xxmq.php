@@ -65,25 +65,25 @@ class xxmq
         }
         switch($mqType){
         case 'rocketmq':
-            if(isset($config['instanceId'])&&$config['instanceId']!=''&&strlen($config['instanceId'])>0){
-                $this->instanceId = $config['instanceId'];
+            if(isset($config['rocketmq']['instanceId'])&&$config['rocketmq']['instanceId']!=''&&strlen($config['rocketmq']['instanceId'])>0){
+                $this->instanceId = $config['rocketmq']['instanceId'];
             }else{
                 $this->instanceId = '';
             }
-            if(isset($config['topic'])&&$config['topic']!=''&&strlen($config['topic'])>0){
-                $this->topic= $config['topic'];
+            if(isset($config['rocketmq']['topic'])&&$config['rocketmq']['topic']!=''&&strlen($config['rocketmq']['topic'])>0){
+                $this->topic= $config['rocketmq']['topic'];
             }else{
                 $this->topic= '';
             }
-            if(isset($config['gid'])&&$config['gid']!=''&&strlen($config['gid'])>0){
-                $this->gid= $config['gid'];
+            if(isset($config['rocketmq']['gid'])&&$config['rocketmq']['gid']!=''&&strlen($config['rocketmq']['gid'])>0){
+                $this->gid= $config['rocketmq']['gid'];
             }else{
                 $this->gid= '';
             }
-            return $this->link = new MQClient($config['endPoint'], $config['accessId'], $config['accessKey']);
+            return $this->link = new MQClient($config['rocketmq']['endPoint'], $config['rocketmq']['accessId'], $config['rocketmq']['accessKey']);
             break;
         default:
-            return $this->link = new MQClient($config['endPoint'], $config['accessId'], $config['accessKey']);
+            return $this->link = new MQClient($config['rocketmq']['endPoint'], $config['rocketmq']['accessId'], $config['rocketmq']['accessKey']);
             break;
         }
     }
