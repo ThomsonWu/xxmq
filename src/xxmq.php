@@ -10,9 +10,11 @@ namespace xxmq;
 use MQ\MQClient;
 use MQ\Exception\InvalidArgumentException;
 use MQ\Model\TopicMessage;
+use mysql_xdevapi\Warning;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use test\Mockery\MockingVariadicArgumentsTest;
 use MQ\Http\HttpClient;
+use xxmq\XxMQException as XException;
 
 
 
@@ -105,16 +107,34 @@ class xxmq
             return $producer->publishMessage($message);
         }
     }
-
-    public function getProducer(){
+    public function getProducer($topic='',$instanceId=''){
         if($this->mqType=='rocketmq'){
-            return $this->link->getProducer($this->instanceId,$this->topic);
+            if($this->isempstr($instanceId)){
+                if(!$this->isempstr($this->instanceId)){
+                    $instanceId = $this->instanceId;
+                }else{
+                    return false;
+                }
+            }
+            if($this->isempstr($topic)){
+                if(!$this->isempstr($this->topic)){
+                    $topic = $this->topic;
+                }else{
+                    return false;
+                }
+            }
+            return $this->link->getProducer($instanceId,$topic);
         }
     }
 
-    public function getConsumer(){
+    public function getConsumer($topic='',$gid='',$instanceId=''){
         if($this->mqType=='rocketmq'){
-            return $this->link->getConsumer($this->instanceId,$this->topic,$this->gid);
+            if($topic!=''&&strlen($topic)>0&&$gid!=''&&strlen($gid)>0){
+                return $this->link->getConsumer($this->instanceId,$topic,$gid);
+            }
+            if($this->topic!=''&&$this->gid!=''){
+                return $this->link->getConsumer($this->instanceId,$this->topic,$this->gid);
+            }
         }
     }
 
@@ -163,6 +183,16 @@ class xxmq
     //to be fixed
     public function listen(){
 
+    }
+
+    private function isempstr($str){
+        if(!is_string($str)){
+            return true;
+        }
+        if($str===''||strlen($str)<=0||$str==null){
+            return true;
+        }
+        return false;
     }
 
 }
