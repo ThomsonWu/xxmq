@@ -141,7 +141,7 @@ class xxmq
             }
             if($this->isempstr($gid)){
                 if(!$this->isempstr($this->gid)){
-                    $topic = $this->gid;
+                    $gid = $this->gid;
                 }else{
                     throw new XxMQException('gid lost!');
                 }
