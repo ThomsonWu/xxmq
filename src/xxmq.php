@@ -10,6 +10,8 @@ namespace xxmq;
 use MQ\MQClient;
 use MQ\Exception\InvalidArgumentException;
 use MQ\Model\TopicMessage;
+use MQ\MQConsumer;
+use MQ\MQProducer;
 use mysql_xdevapi\Warning;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use test\Mockery\MockingVariadicArgumentsTest;
@@ -44,26 +46,21 @@ class xxmq
             $this->endPoint = $config['rocketmq']['endPoint'];
             $this->accessId = $config['rocketmq']['accessId'];
             $this->accessKey = $config['rocketmq']['accessKey'];
-            $endPoint = $this->endPoint;
-            $accessId = $this->accessId;
-            $accessKey = $this->accessKey;
             $securityToken = null;
             try {
                 $this->link= $this->init($mqType,$config);
-                //parent::__construct($endPoint, $accessId, $accessKey);
-                //$this->client = new HttpClient($endPoint, $accessId,
-                    //$accessKey, $securityToken, $config);
             } catch (\Exception $e) {
                 if ($e instanceof MQ\Exception\InvalidArgumentException) {
                     printf("Invalid Argument!RequestId:%s\n", $e->getRequestId());
                 }
-                echo $e->getMessage();
+//                echo $e->getMessage();
+                throw new XxMQException($e->getMessage());
             }
         }
     }
     protected function init($mqType,$config){
         if(!is_array($config)){
-            throw new \Exception('config lost!');
+            throw new XxMQException('config lost!');
         }
         switch($mqType){
         case 'rocketmq':
@@ -90,21 +87,21 @@ class xxmq
         }
     }
 
-    public function publish($topic,$message,$instanceId=null){
+    public function publish($producer=null, $message = ''){
         $mqType = $this->mqType;
-        if($topic==''||$topic==null||strlen($topic)<=0){
-            throw new \Exception('topic can not be empty!');
+        if ($this->isempstr($message)) {
+            throw new XxMQException('do not publish empty message!');
         }
-        if($message==''||$message==null||strlen($message)<=0){
-            throw new \Exception('do not publish empty message!');
-        }
-        if($mqType=='rocketmq'){
-            if($instanceId==null){
-                throw new \Exception('RocketMQ need instanceId please administrator to get it!');
+        try {
+            if ($producer == null) {
+                $producer = $this->getProducer();
             }
-            $message = $this->setMessage($message,$mqType);
-            $producer = $this->getProducer();
-            return $producer->publishMessage($message);
+            if ($mqType == 'rocketmq') {
+                $message = $this->setMessage($message, $mqType);
+                return $producer->publishMessage($message);
+            }
+        } catch (\Exception $e) {
+            throw new XxMQException($e->getMessage());
         }
     }
     public function getProducer($topic='',$instanceId=''){
@@ -113,27 +110,51 @@ class xxmq
                 if(!$this->isempstr($this->instanceId)){
                     $instanceId = $this->instanceId;
                 }else{
-                    return false;
+                    throw new XxMQException('instanceId lost!');
                 }
             }
             if($this->isempstr($topic)){
                 if(!$this->isempstr($this->topic)){
                     $topic = $this->topic;
                 }else{
-                    return false;
+                    throw new XxMQException('topic lost!');
                 }
             }
-            return $this->link->getProducer($instanceId,$topic);
+            try {
+                return $this->link->getProducer($instanceId, $topic);
+            } catch (\Exception $e) {
+                throw new XxMQException($e->getMessage());
+            }
         }
     }
 
     public function getConsumer($topic='',$gid='',$instanceId=''){
         if($this->mqType=='rocketmq'){
-            if($topic!=''&&strlen($topic)>0&&$gid!=''&&strlen($gid)>0){
-                return $this->link->getConsumer($this->instanceId,$topic,$gid);
+            if($this->isempstr($instanceId)){
+                if(!$this->isempstr($this->instanceId)){
+                    $instanceId = $this->instanceId;
+                }else{
+                    throw new XxMQException('instanceId lost!');
+                }
             }
-            if($this->topic!=''&&$this->gid!=''){
-                return $this->link->getConsumer($this->instanceId,$this->topic,$this->gid);
+            if($this->isempstr($gid)){
+                if(!$this->isempstr($this->gid)){
+                    $topic = $this->gid;
+                }else{
+                    throw new XxMQException('gid lost!');
+                }
+            }
+            if($this->isempstr($topic)){
+                if(!$this->isempstr($this->topic)){
+                    $topic = $this->topic;
+                }else{
+                    throw new XxMQException('topic lost!');
+                }
+            }
+            try {
+                return $this->link->getConsumer($instanceId, $topic, $gid);
+            } catch (\Exception $e) {
+                throw new XxMQException($e->getMessage());
             }
         }
     }
@@ -141,11 +162,16 @@ class xxmq
     public function setMessage($message='',$tag='')
     {
         $mqType = $this->mqType;
+        $messageObj = null;
         switch($mqType){
         case 'rocketmq':
-            $messageObj = new TopicMessage($message);
-            if($tag!=''){
-                $messageObj->setMessageTag($tag);
+            try {
+                $messageObj = new TopicMessage($message);
+                if (strlen($tag)>0) {
+                    $messageObj->setMessageTag($tag);
+                }
+            } catch (\Exception $e) {
+                throw new XxMQException($e->getMessage());
             }
             break;
         default :
@@ -155,22 +181,24 @@ class xxmq
         return $messageObj;
     }
 
-    public function ackMessage($receiptHandles=array()){
+    public function ackMessage($receiptHandles=array(),$consumer = null){
         $mqType = $this->mqType;
         if($mqType=='rocketmq'){
-            $consumer = $this->getConsumer();
-            try{
-                return $consumer->ackMessage($receiptHandles);
-            }catch(\Exception $e){
-                if ($e instanceof MQ\Exception\AckMessageException) {
-                   // 某些消息的句柄可能超时了会导致确认不成功
-                    printf("Ack Error, RequestId:%s\n", $e->getRequestId());
-                    foreach ($e->getAckMessageErrorItems() as $errorItem) {
-                        printf("\tReceiptHandle:%s, ErrorCode:%s, ErrorMsg:%s\n", $errorItem->getReceiptHandle(), $errorItem->getErrorCode(), $errorItem->getErrorCode());
-                    }
-                    exit;
+            try {
+                if ($consumer == null) {
+                    $consumer = $this->getConsumer();
                 }
-
+                return $consumer->ackMessage($receiptHandles);
+            } catch (\Exception $e) {
+                if ($e instanceof MQ\Exception\AckMessageException) {
+                    // 某些消息的句柄可能超时了会导致确认不成功
+                    $errMsg = 'Ack Error, RequestId:' . $e->getRequestId() . "\n";
+                    foreach ($e->getAckMessageErrorItems() as $errorItem) {
+                        $errMsg = $errMsg . "\tReceiptHandle: " . $errorItem->getReceiptHandle() . "ErrorCode:" . $errorItem->getErrorCode() . " ErrorMsg:" . $errorItem->getErrorCode() . "\n";
+                    }
+                    throw new XxMQException($errMsg);
+                }
+                throw new XxMQException($e->getMessage());
             }
         }
     }
@@ -194,5 +222,6 @@ class xxmq
         }
         return false;
     }
+
 
 }
