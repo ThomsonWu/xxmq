@@ -38,9 +38,11 @@ class xxmq
     protected $accessKey=null;
     private $mqType='rocketmq';
 
-    public function __construct($mqType)
+    public function __construct($mqType,$config = array())
     {
-        $config = $this->getConfig();
+        if($this->is_emp_array($config)){
+            $config = $this->getConfig();
+        }
         $this->mqType = $mqType;
         if($mqType=='rocketmq'){
             $this->endPoint = $config['rocketmq']['endPoint'];
@@ -223,5 +225,25 @@ class xxmq
         return false;
     }
 
+    private function is_emp_array($array,$times=1){
+        if(!is_array($array)&&$times=1){
+            return true;
+        }
+        $r = true;
+        if(count($array)>0){
+            foreach($array as $item){
+                $times ++;
+                if(is_array($item)){
+                    $this->is_emp_array($item,$times);
+                }else{
+                    $r = $this->isempstr($item);
+                }
+            }
+        }
+        if($r&&count($array)>0){
+            return false;
+        }
+        return $r;
+    }
 
 }
