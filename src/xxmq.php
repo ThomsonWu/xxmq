@@ -89,7 +89,7 @@ class xxmq
         }
     }
 
-    public function publish($producer=null, $message = ''){
+    public function publish($producer=null, $message = '',$tag=''){
         $mqType = $this->mqType;
         if ($this->isempstr($message)) {
             throw new XxMQException('do not publish empty message!');
@@ -99,7 +99,7 @@ class xxmq
                 $producer = $this->getProducer();
             }
             if ($mqType == 'rocketmq') {
-                $message = $this->setMessage($message, $mqType);
+                $message = $this->setMessage($message, $tag);
                 return $producer->publishMessage($message);
             }
         } catch (\Exception $e) {
